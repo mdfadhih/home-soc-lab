@@ -1,0 +1,30 @@
+<!-- Custom Wazuh Rule: Unauthorized Account Creation Detection -->
+<!-- Author: Mohamed Fadhih | Home SOC Lab -->
+<!-- MITRE ATT&CK: T1136 - Create Account -->
+
+<group name="custom_soc_lab,account_management,">
+
+  <!-- Rule: New local admin account created -->
+  <rule id="100005" level="14">
+    <if_sid>60109</if_sid>
+    <description>New local user account created - Investigate immediately (T1136)</description>
+    <mitre>
+      <id>T1136.001</id>
+      <id>T1098</id>
+    </mitre>
+    <group>account_creation,critical,</group>
+  </rule>
+
+  <!-- Rule: User added to administrators group -->
+  <rule id="100006" level="15">
+    <if_sid>60154</if_sid>
+    <field name="win.eventdata.targetUserName" type="pcre2">(?i)(hacker|admin|test|backdoor|temp)</field>
+    <description>Suspicious user added to Administrators group - Possible privilege escalation (T1484)</description>
+    <mitre>
+      <id>T1484</id>
+      <id>T1078</id>
+    </mitre>
+    <group>privilege_escalation,critical,immediate_response,</group>
+  </rule>
+
+</group>

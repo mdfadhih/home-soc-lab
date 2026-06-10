@@ -1,0 +1,20 @@
+| Dashboard: Process Creation Monitor
+| Description: Detects suspicious process creation including PowerShell
+| MITRE ATT&CK: T1059.001 - PowerShell, T1059 - Command Execution
+| Author: Mohamed Fadhih
+
+index=* source="WinEventLog:Security" EventCode=4688
+| timechart count by ComputerName
+
+| SPL Query 2: Suspicious PowerShell detection
+index=* source="WinEventLog:Security" EventCode=4688
+| search Process_Command_Line="*bypass*" OR Process_Command_Line="*hidden*" OR Process_Command_Line="*IEX*" OR Process_Command_Line="*DownloadString*"
+| table _time ComputerName Account_Name Process_Command_Line
+| eval MITRE_TTP="T1059.001 - PowerShell"
+| sort - _time
+
+| SPL Query 3: All process creation with command line
+index=* source="WinEventLog:Security" EventCode=4688
+| table _time ComputerName Account_Name New_Process_Name Process_Command_Line
+| sort - _time
+| head 50

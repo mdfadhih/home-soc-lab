@@ -1,0 +1,21 @@
+| Dashboard: Failed Login Monitor
+| Description: Detects brute force and failed authentication attempts
+| MITRE ATT&CK: T1110 - Brute Force
+| Author: Mohamed Fadhih
+
+index=* source="WinEventLog:Security" EventCode=4625
+| timechart count by Account_Name
+
+| SPL Query 2: Failed login summary with source
+index=* source="WinEventLog:Security" EventCode=4625
+| stats count as FailedAttempts by Account_Name ComputerName
+| where FailedAttempts > 3
+| sort - FailedAttempts
+
+| SPL Query 3: Brute force detection (5+ failures in 5 mins)
+index=* source="WinEventLog:Security" EventCode=4625
+| bucket _time span=5m
+| stats count as Attempts by _time Account_Name ComputerName
+| where Attempts >= 5
+| eval MITRE_TTP="T1110 - Brute Force"
+| sort - Attempts

@@ -1,0 +1,30 @@
+| Dashboard: Security Events Overview
+| Description: High-level view of all security events by type
+| Author: Mohamed Fadhih
+
+index=* source="WinEventLog:Security"
+| timechart count by EventCode
+
+| SPL Query 2: Event summary table
+index=* source="WinEventLog:Security"
+| stats count by EventCode
+| eval Description=case(
+    EventCode=4624, "Successful Logon",
+    EventCode=4625, "Failed Logon",
+    EventCode=4688, "Process Creation",
+    EventCode=4720, "User Account Created",
+    EventCode=4732, "User Added to Group",
+    EventCode=4672, "Special Privileges Assigned",
+    1=1, "Other"
+  )
+| sort - count
+
+| SPL Query 3: Account creation and privilege changes
+index=* source="WinEventLog:Security" (EventCode=4720 OR EventCode=4732 OR EventCode=4728)
+| table _time EventCode Account_Name ComputerName
+| eval MITRE_TTP=case(
+    EventCode=4720, "T1136 - Create Account",
+    EventCode=4732, "T1484 - Group Policy Modification",
+    EventCode=4728, "T1484 - Domain Group Modified"
+  )
+| sort - _time
